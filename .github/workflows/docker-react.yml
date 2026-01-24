@@ -1,0 +1,48 @@
+name: docker multi-container tests + push # name shown in the github actions ui
+
+# when you push to main or master or open a merge request targeting main or master
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-push: # job id, used internally to reference this job
+    name: test client + push docker images # name shown in github actions ui
+    runs-on: ubuntu-latest # linux vm with docker installed
+
+    steps:
+      # checkout repo code
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      # build and test client image
+      - name: build client test image
+        run: docker build -t jonhourcade/docker-client-test -f client/Dockerfile.dev ./client
+      - name: run client tests
+        run: docker run -e CI=true jonhourcade/docker-client-test npm test
+
+      # login to docker hub
+      - name: docker hub login
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # build all production images
+      - name: build client prod image
+        run: docker build -t jonhourcade/docker-client:latest -f client/Dockerfile ./client
+      - name: build server prod image
+        run: docker build -t jonhourcade/docker-server:latest -f server/Dockerfile ./server
+      - name: build worker prod image
+        run: docker build -t jonhourcade/docker-worker:latest -f worker/Dockerfile ./worker
+      - name: build nginx prod image
+        run: docker build -t jonhourcade/docker-nginx:latest -f nginx/Dockerfile ./nginx
+
+      # push all production images to docker hub
+      - name: push client image
+        run: docker push jonhourcade/docker-client:latest
+      - name: push server image
+        run: docker push jonhourcade/docker-server:latest
+      - name: push worker image
+        run: docker push jonhourcade/docker-worker:latest
+      - name: push nginx image
+        run: docker push jonhourcade/docker-nginx:latest
