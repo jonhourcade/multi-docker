@@ -1,6 +1,4 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders without crashing', () => {
-    // do nothing
-});
+test('renders learn react link', () => {});

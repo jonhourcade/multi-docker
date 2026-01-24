@@ -1,11 +1,6 @@
-from node:lts-alpine
-
-workdir /app
-
-copy package.json .
-
-run npm install
-
-copy . .
-
-cmd ["npm", "run", "dev"]
+FROM node:lts-alpine
+WORKDIR "/app"
+COPY ./package.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "run", "dev"]

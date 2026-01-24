@@ -1,19 +1,6 @@
-# use a lightweight base image with node.js and npm
-from node:lts-alpine 
-
-# create a dir called app inside the container and cd into it
-workdir /app
-
-# copy package.json to the working directory
-copy package.json .
-
-# install dependencies
-run npm install
-
-# copy all files from the current directory to the working directory inside the container
-# each step step is cached, the step is skipped if there are no changes
-# we will only run the first four steps if package.json changes
-copy . .
-
-# cmd is the command that runs when the container starts
-cmd ["npm", "run", "start"]
+FROM node:lts-alpine
+WORKDIR '/app'
+COPY ./package.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "run", "start"]
