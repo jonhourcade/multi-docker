@@ -20,6 +20,7 @@ jobs:
       # build and test client image
       - name: build client test image
         run: docker build -t jonhourcade/docker-client-test -f client/Dockerfile.dev ./client
+
       - name: run client tests
         run: docker run -e CI=true jonhourcade/docker-client-test npm test
 
@@ -30,19 +31,59 @@ jobs:
       # build all production images
       - name: build client prod image
         run: docker build -t jonhourcade/docker-client:latest -f client/Dockerfile ./client
+
       - name: build server prod image
         run: docker build -t jonhourcade/docker-server:latest -f server/Dockerfile ./server
+
       - name: build worker prod image
         run: docker build -t jonhourcade/docker-worker:latest -f worker/Dockerfile ./worker
+
       - name: build nginx prod image
         run: docker build -t jonhourcade/docker-nginx:latest -f nginx/Dockerfile ./nginx
 
       # push all production images to docker hub
       - name: push client image
         run: docker push jonhourcade/docker-client:latest
+
       - name: push server image
         run: docker push jonhourcade/docker-server:latest
+
       - name: push worker image
         run: docker push jonhourcade/docker-worker:latest
+
       - name: push nginx image
         run: docker push jonhourcade/docker-nginx:latest
+
+      # install aws cli on the runner
+      # a runner is a temporary virtual machine that runs the steps defined in this workflow
+      - name: install aws cli
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      # install elastic beanstalk cli on the runner
+      - name: install elastic beanstalk cli
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install awsebcli
+
+      # configure aws credentials for this runner
+      - name: configure aws credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region ${{ secrets.AWS_REGION }}
+
+      # initialize eb cli for this project
+      # this is kinda like creating an object and setting some properties on it before running methods on it
+      - name: eb init
+        run: |
+          eb init ${{ secrets.EB_APPLICATION_NAME }} \
+            --platform docker \
+            --region ${{ secrets.AWS_REGION }}
+
+      
+      # deploy the docker images to elastic beanstalk
+      # elastic beanstalk will pull the images from docker hub and run them on its servers
+      - name: eb deploy
+        run: eb deploy ${{ secrets.EB_ENVIRONMENT_NAME }}
