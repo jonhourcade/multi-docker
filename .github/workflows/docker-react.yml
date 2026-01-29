@@ -54,12 +54,12 @@ jobs:
       - name: push nginx image
         run: docker push jonhourcade/docker-nginx:latest
 
-      # install aws cli on the runner
-      # a runner is a temporary virtual machine that runs the steps defined in this workflow
-      - name: install aws cli
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y awscli
+      # # install aws cli on the runner
+      # # a runner is a temporary virtual machine that runs the steps defined in this workflow
+      # - name: install aws cli
+      #   run: |
+      #     sudo apt-get update
+      #     sudo apt-get install -y awscli
 
       # install elastic beanstalk cli on the runner
       - name: install elastic beanstalk cli
