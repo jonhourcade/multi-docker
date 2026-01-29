@@ -70,9 +70,10 @@ app.post("/values", async (req, res) => {
   res.send({ working: true });
 });
 
-app.listen(5000, "0.0.0.0", (err) => {
-  if (err) {
-    console.error("Error starting server:", err);
+// 0.0.0.0 means accept traffic from anywhere in the container network
+app.listen(5000, "0.0.0.0", error => {
+  if (error) {
+    console.error("Error starting server:", error);
     return;
   }
   console.log("Listening");
